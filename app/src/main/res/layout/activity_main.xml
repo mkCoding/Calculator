@@ -8,12 +8,13 @@
     android:background=" #A6A6A6"
     tools:context=".MainActivity">
 
-    <EditText
+    <TextView
         android:id="@+id/calculatorScreen"
         android:layout_width="match_parent"
         android:layout_height="160dp"
         android:text="0"
         android:inputType="number"
+        android:textColor="@color/black"
         android:textSize="100sp"
         android:layout_marginHorizontal="20dp"
         android:textAlignment="viewEnd"

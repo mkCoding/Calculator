@@ -11,6 +11,10 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding:ActivityMainBinding
+    var currentValue = ""
+    var isOperationClicked = false
+    var lastInputIsOperator = false //used so user doesn't enter in the operator twice
+    val TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,88 +59,79 @@ class MainActivity : AppCompatActivity() {
 
         numberButtons.forEach {numberButton->
             numberButton.setOnClickListener {
-                problemList.add(numberButton.text) //add it to problem list
+
+
+                //every time a number button is clicked add it to current value
+                currentValue = currentValue + numberButton.text.toString()
+
+                //display that value to the screen
+                binding.calculatorScreen.text = currentValue
+
+                lastInputIsOperator = false
             }
         }
 
         operationButtons.forEach { operationButton ->
             operationButton.setOnClickListener {
-                problemList.add(operationButton.text)
+
+                if(!lastInputIsOperator) { //if last value entered by user is not an operator then allow them to add operator
+                    //add the fully entered number to the list
+                    problemList.add(currentValue)
+
+                    //after add it to the list clear the current number value
+                    currentValue = ""
+
+                    //add operation to the list
+                    problemList.add(operationButton.text)
+                    lastInputIsOperator = true
+                }
+
             }
         }
 
 
-        //Clear is always zero
-        binding.btnClear.setOnClickListener { binding.calculatorScreen.setText("0") }
-
-        //When number is clicked update text view and add it to the list
-        binding.btnNumber0.setOnClickListener {
-            binding.calculatorScreen.setText("0")
-            problemList.add(0)
-
-        }
-        binding.btnNumber1.setOnClickListener {
-            binding.calculatorScreen.setText("2")
-            problemList.add(1)
-        }
-        binding.btnNumber2.setOnClickListener {
-            binding.calculatorScreen.setText("2")
-            problemList.add(2)
-        }
-
-        binding.btnNumber3.setOnClickListener {
-            binding.calculatorScreen.setText("3")
-            problemList.add(3)
-        }
-
-        binding.btnNumber4.setOnClickListener {
-            binding.calculatorScreen.setText("4")
-            problemList.add(4)
-        }
-        binding.btnNumber5.setOnClickListener {
-            binding.calculatorScreen.setText("5")
-            problemList.add(5)
-        }
-        binding.btnNumber6.setOnClickListener {
-            binding.calculatorScreen.setText("6")
-            problemList.add(6)
-        }
-        binding.btnNumber7.setOnClickListener {
-            binding.calculatorScreen.setText("7")
-            problemList.add(7)
-        }
-        binding.btnNumber8.setOnClickListener {
-            binding.calculatorScreen.setText("8")
-            problemList.add(8)
-        }
-        binding.btnNumber9.setOnClickListener {
-            binding.calculatorScreen.setText("9")
-            problemList.add(9)
-        }
-
-        //when operation is clicked only add it to the list
-
-        binding.btnDivide.setOnClickListener {
-            problemList.add("/")
-        }
-        binding.btnMultiply.setOnClickListener {
-            problemList.add("*")
-        }
-
-        binding.btnSubtract.setOnClickListener {
-            problemList.add("-")
-        }
-
-        binding.btnAdd.setOnClickListener {
-            problemList.add("+")
-        }
-
-
         binding.btnEquals.setOnClickListener {
-            Log.d("MainActivity","$problemList")
+            problemList.add(currentValue) //the entire problem has been added to problemList
+
+            val expressionString = problemList.joinToString (" ") //convert array to string separated by spaces
+
+            binding.calculatorScreen.text = evaluateTheExpression(expressionString.replace("x","*")).toString() //pass space separated string to the evaluateTheExpression function
+
+
+
+            Log.d(TAG,"$expressionString")
+            Log.d(TAG,"$problemList")
 
         }
 
+        //Clear is always zero
+        binding.btnClear.setOnClickListener {
+            binding.calculatorScreen.setText("0") //set the screen to 0
+            problemList.clear() //clear the problem list (reset)
+        }
+
+
+    }
+
+
+    fun evaluateTheExpression(expression: String):Int{
+        var partOfExpression = expression.split(" ")
+        var result = partOfExpression [0].toInt() //this will be the starting number of the result convert from string to Int
+
+        //for loop to iterate through every other element
+        for(i in 1 until partOfExpression.size step 2){
+
+            val operator = partOfExpression[i] //holds the operator
+            val operand = partOfExpression[i + 1].toInt() //holds the actual number
+
+            when(operator){
+                "+" -> result += operand
+                "-" -> result += operand
+                "*" -> result *= operand
+                "/" -> result /= operand
+            }
+        }
+        return result
     }
     fun addition(num1:Int, num2:Int):Int{
         return num1 + num2
