@@ -11,9 +11,14 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding:ActivityMainBinding
-    var currentValue = ""
-    var isOperationClicked = false
-    var lastInputIsOperator = false //used so user doesn't enter in the operator twice
+    private var currentValue = ""
+    var isResultCleared = false
+    var isEqualsPressed = false
+    var problemList = mutableListOf<Any>()
+
+
+    private var lastInputIsOperator = false //used so user doesn't enter in the operator twice
+
     val TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         var isOperationLastSelected = false
 
 
-        //create a list referencing each button
+        //create a list referencing each number button
         val numberButtons = mutableListOf<ExtendedFloatingActionButton>(
             binding.btnNumber0,
             binding.btnNumber1,
@@ -55,11 +60,10 @@ class MainActivity : AppCompatActivity() {
         )
 
         //Create list to hold the entire problem to a list
-        val problemList = mutableListOf<Any>()
+//         problemList = mutableListOf<Any>()
 
         numberButtons.forEach {numberButton->
             numberButton.setOnClickListener {
-
 
                 //every time a number button is clicked add it to current value
                 currentValue = currentValue + numberButton.text.toString()
@@ -67,55 +71,70 @@ class MainActivity : AppCompatActivity() {
                 //display that value to the screen
                 binding.calculatorScreen.text = currentValue
 
-                lastInputIsOperator = false
+                lastInputIsOperator = false //last user input is a number
             }
         }
 
         operationButtons.forEach { operationButton ->
             operationButton.setOnClickListener {
 
-                if(!lastInputIsOperator) { //if last value entered by user is not an operator then allow them to add operator
+//                if(isResultCleared == false){
+//                    lastInputIsOperator = true
+//                }
+
+                if(lastInputIsOperator == false) { //if last value entered by user is not an operator then allow them to add operator
                     //add the fully entered number to the list
                     problemList.add(currentValue)
+                    Log.d(TAG,"$problemList")
+
 
                     //after add it to the list clear the current number value
                     currentValue = ""
 
                     //add operation to the list
                     problemList.add(operationButton.text)
-                    lastInputIsOperator = true
+                    Log.d(TAG,"$problemList")
+
+                    lastInputIsOperator = true //last input added was an operator at this point
                 }
 
             }
         }
 
 
+
+        //Equals button which will retrieve the result
         binding.btnEquals.setOnClickListener {
+            isEqualsPressed = true
             problemList.add(currentValue) //the entire problem has been added to problemList
 
-            val expressionString = problemList.joinToString (" ") //convert array to string separated by spaces
-
+            var expressionString = problemList.joinToString (" ") //convert array to string separated by spaces
             binding.calculatorScreen.text = evaluateTheExpression(expressionString.replace("x","*")).toString() //pass space separated string to the evaluateTheExpression function
 
 
 
+                //currentValue = "" //clear current value
+//            problemList.clear()
             Log.d(TAG,"$expressionString")
             Log.d(TAG,"$problemList")
 
         }
 
-        //Clear is always zero
+        //Clear everything and set all values always zero
         binding.btnClear.setOnClickListener {
+            isResultCleared = true
             binding.calculatorScreen.setText("0") //set the screen to 0
             problemList.clear() //clear the problem list (reset)
+            currentValue = ""
         }
 
 
     }
 
 
-    fun evaluateTheExpression(expression: String):Int{
+    private fun evaluateTheExpression(expression: String):Int{
         var partOfExpression = expression.split(" ")
+
         var result = partOfExpression [0].toInt() //this will be the starting number of the result convert from string to Int
 
         //for loop to iterate through every other element
@@ -131,24 +150,17 @@ class MainActivity : AppCompatActivity() {
                 "/" -> result /= operand
             }
         }
+
+        problemList.clear()
+        currentValue = ""
+
+//        problemList.add(result)
+        currentValue ="$result"
+
+    //partOfExpression = emptyList()
+
         return result
     }
-//    fun addition(num1:Int, num2:Int):Int{
-//        return num1 + num2
-//    }
-//
-//    fun subtraction(num1:Int, num2:Int):Int{
-//        return num1 - num2
-//    }
-//
-//    fun division(num1:Int, num2:Int):Int{
-//        return num1 / num2
-//    }
-//
-//    fun multiplication(num1: Int, num2:Int):Int{
-//        return num1 * num2
-//    }
-
 
 
 }
